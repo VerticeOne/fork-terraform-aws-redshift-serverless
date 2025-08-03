@@ -7,7 +7,6 @@ Terraform module for creating Redshift Serverless Clusters (AutomateTheCloud mod
 ```hcl
 module "redshift_serverless" {
   source    = "../"
-  providers = { aws.this = aws.example }
 
   details = {
     scope       = "Demo"

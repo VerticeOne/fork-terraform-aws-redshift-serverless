@@ -11,5 +11,4 @@ resource "aws_redshiftserverless_workgroup" "this" {
   subnet_ids         = local.subnet.ids
 
   tags     = local.tags
-  provider = aws.this
 }

@@ -9,5 +9,4 @@ resource "aws_security_group" "this" {
       "Name" = "rs-${var.name}"
     })
   )
-  provider = aws.this
 }

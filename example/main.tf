@@ -13,7 +13,6 @@ provider "aws" {
 # Module: Redshift Serverless
 module "redshift_serverless" {
   source    = "../"
-  providers = { aws.this = aws.example }
 
   details = {
     scope       = "Demo"

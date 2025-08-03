@@ -8,7 +8,6 @@ resource "aws_security_group_rule" "ingress" {
   cidr_blocks              = (can(cidrnetmask(each.value["source"])) ? [each.value["source"]] : null)
   source_security_group_id = (can(cidrnetmask(each.value["source"])) ? null : each.value["source"])
   description              = try(each.value["description"], null)
-  provider                 = aws.this
 }
 
 resource "aws_security_group_rule" "egress" {
@@ -19,5 +18,4 @@ resource "aws_security_group_rule" "egress" {
   to_port           = 0
   cidr_blocks       = ["0.0.0.0/0"]
   description       = "Allow All"
-  provider          = aws.this
 }

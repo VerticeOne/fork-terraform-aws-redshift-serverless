@@ -5,26 +5,11 @@
 ##-----------------------------------------------------------------------------
 
 ##-----------------------------------------------------------------------------
-# Terraform
-terraform {
-  required_version = "~> 1.12.0"
-  required_providers {
-    aws = {
-      source                = "hashicorp/aws"
-      version               = "~> 5.93"
-      configuration_aliases = [aws.this]
-    }
-  }
-}
-
-##-----------------------------------------------------------------------------
 # Data
 data "aws_region" "this" {
-  provider = aws.this
 }
 
 data "aws_caller_identity" "this" {
-  provider = aws.this
 }
 
 ##-----------------------------------------------------------------------------

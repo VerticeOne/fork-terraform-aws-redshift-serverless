@@ -13,5 +13,4 @@ resource "aws_redshiftserverless_namespace" "this" {
   # log_exports = ""
 
   tags     = local.tags
-  provider = aws.this
 }
