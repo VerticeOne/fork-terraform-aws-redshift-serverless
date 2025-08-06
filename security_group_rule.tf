@@ -1,5 +1,5 @@
 resource "aws_security_group_rule" "ingress" {
-  for_each                 = { for rule in var.security_group_rules : join(";", [rule.source]) => rule }
+  for_each                 = { for idx, item in var.security_group_rules : idx => item }
   security_group_id        = aws_security_group.this.id
   type                     = "ingress"
   protocol                 = "tcp"
