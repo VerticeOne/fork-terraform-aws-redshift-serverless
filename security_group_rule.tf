@@ -5,8 +5,7 @@ resource "aws_security_group_rule" "ingress" {
   protocol                 = "tcp"
   from_port                = var.port
   to_port                  = var.port
-  cidr_blocks              = (can(cidrnetmask(each.value["source"])) ? [each.value["source"]] : null)
-  source_security_group_id = (can(cidrnetmask(each.value["source"])) ? null : each.value["source"])
+  cidr_blocks              = each.value["source"]
   description              = try(each.value["description"], null)
 }
 
