@@ -12,7 +12,7 @@ provider "aws" {
 ##-----------------------------------------------------------------------------
 # Module: Redshift Serverless
 module "redshift_serverless" {
-  source    = "../"
+  source = "../"
 
   details = {
     scope       = "Demo"
@@ -41,10 +41,10 @@ module "redshift_serverless" {
       # password = "test1234"
     }
   }
-  
-  base_capacity = null
+
+  base_capacity        = null
   enhanced_vpc_routing = true
-  publicly_accessible = false
+  publicly_accessible  = false
 
   security_group_rules = [
     {

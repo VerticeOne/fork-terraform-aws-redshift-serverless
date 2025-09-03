@@ -18,6 +18,7 @@ override.tf.json
 
 # Editors
 .idea/*
+.vscode
 
 ### OS Related
 # Windows

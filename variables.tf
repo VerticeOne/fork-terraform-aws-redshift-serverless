@@ -16,6 +16,18 @@ variable "db_name" {
   default     = ""
 }
 
+variable "log_exports" {
+  description = "Log Exports"
+  type        = list(string)
+  default     = ["userlog", "connectionlog", "useractivitylog"]
+}
+
+variable "log_retention_in_days" {
+  description = "Log Retention In Days"
+  type        = number
+  default     = 365
+}
+
 variable "encryption" {
   description = "Encryption"
   type        = any

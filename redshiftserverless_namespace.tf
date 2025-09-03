@@ -10,7 +10,7 @@ resource "aws_redshiftserverless_namespace" "this" {
   iam_roles            = [aws_iam_role.this.arn]
   default_iam_role_arn = aws_iam_role.this.arn
 
-  # log_exports = ""
+  log_exports = var.log_exports
 
-  tags     = local.tags
+  tags = local.tags
 }

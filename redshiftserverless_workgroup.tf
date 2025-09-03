@@ -10,5 +10,5 @@ resource "aws_redshiftserverless_workgroup" "this" {
   security_group_ids = [aws_security_group.this.id]
   subnet_ids         = local.subnet.ids
 
-  tags     = local.tags
+  tags = local.tags
 }

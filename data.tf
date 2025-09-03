@@ -1,10 +1,10 @@
 data "aws_kms_key" "this" {
-  count    = try(local.kms_key_id, null) != null ? 1 : 0
-  key_id   = local.kms_key_id
+  count  = try(local.kms_key_id, null) != null ? 1 : 0
+  key_id = local.kms_key_id
 }
 
 data "aws_vpc" "this" {
-  id       = var.vpc_id
+  id = var.vpc_id
 }
 
 data "aws_subnets" "this" {

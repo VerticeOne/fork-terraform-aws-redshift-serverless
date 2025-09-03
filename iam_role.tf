@@ -38,10 +38,10 @@ resource "aws_iam_role_policy_attachment" "s3_read_all" {
 }
 
 resource "aws_iam_role_policy" "s3_read" {
-  count    = try(length(var.permissions.s3.read.bucket_arns), 0) > 0 ? 1 : 0
-  name     = "S3_Access_Read"
-  role     = aws_iam_role.this.id
-  policy   = data.aws_iam_policy_document.iam_role_policy-redshift-s3_read[0].json
+  count  = try(length(var.permissions.s3.read.bucket_arns), 0) > 0 ? 1 : 0
+  name   = "S3_Access_Read"
+  role   = aws_iam_role.this.id
+  policy = data.aws_iam_policy_document.iam_role_policy-redshift-s3_read[0].json
 }
 
 data "aws_iam_policy_document" "iam_role_policy-redshift-s3_read" {
@@ -65,10 +65,10 @@ data "aws_iam_policy_document" "iam_role_policy-redshift-s3_read" {
 }
 
 resource "aws_iam_role_policy" "s3_write" {
-  count    = try(length(var.permissions.s3.write.bucket_arns), 0) > 0 ? 1 : 0
-  name     = "S3_Access_Write"
-  role     = aws_iam_role.this.id
-  policy   = data.aws_iam_policy_document.iam_role_policy-redshift-s3_write[0].json
+  count  = try(length(var.permissions.s3.write.bucket_arns), 0) > 0 ? 1 : 0
+  name   = "S3_Access_Write"
+  role   = aws_iam_role.this.id
+  policy = data.aws_iam_policy_document.iam_role_policy-redshift-s3_write[0].json
 }
 
 data "aws_iam_policy_document" "iam_role_policy-redshift-s3_write" {
