@@ -7,7 +7,6 @@ Terraform module for creating Redshift Serverless Clusters (AutomateTheCloud mod
 ```hcl
 module "redshift_serverless" {
   source    = "../"
-  providers = { aws.this = aws.example }
 
   details = {
     scope       = "Demo"
@@ -22,6 +21,9 @@ module "redshift_serverless" {
 
   name    = "demo-redshift-serverless-dev"
   db_name = "demo"
+
+  log_exports = ["userlog", "connectionlog", "useractivitylog"]
+  log_retention_in_days = 365
 
   encryption = {
     enabled = true
@@ -91,6 +93,8 @@ module "redshift_serverless" {
 | `db_name` | Database Name | `string` | |
 | `encryption` | Encryption | `any` | |
 | `enhanced_vpc_routing` | Enhanced VPC Routing | `bool` | `true` |
+| `log_exports` | Log Exports | `list(string)` | `["userlog", "connectionlog", "useractivitylog"]` |
+| `log_retention_in_days` | Log Retention In Days | `number` | `365` |
 | `name` | Name | `string` | |
 | `permissions` | Permissions | `any` | |
 | `port` | Port | `number` | `5439` |
@@ -132,6 +136,7 @@ All outputs from this module are mapped to a single output named `metadata` to m
 | `aws.region.abbr` | AWS Region four letter abbreviation, example: `use1` |
 | `aws.region.description` | AWS Region description, example: `US East (N. Virginia)` |
 | `iam.role` | IAM - Role |
+| `redshift_serverless.cloudwatch_log_group` | Redshift Serverless - CloudWatch Log Group |
 | `redshift_serverless.namespace` | Redshift Serverless - Namespace |
 | `redshift_serverless.workgroup` | Redshift Serverless - Workgroup |
 | `security_group` | Security Group |
