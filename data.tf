@@ -1,5 +1,5 @@
 data "aws_kms_key" "this" {
-  count  = try(local.kms_key_id, null) != null ? 1 : 0
+  count  = try(var.encryption.enabled, true) ? 1 : 0
   key_id = local.kms_key_id
 }
 
