@@ -36,7 +36,7 @@ output "metadata" {
     }
 
     redshift_serverless = {
-      cloudwatch_log_group = try(aws_cloudwatch_log_group.this[0], null)
+      cloudwatch_log_group = try(aws_cloudwatch_log_group.this, null)
       namespace = {
         arn                  = try(aws_redshiftserverless_namespace.this.arn, null)
         db_name              = try(aws_redshiftserverless_namespace.this.db_name, null)
