@@ -93,7 +93,7 @@ locals {
     }
     region = {
       name        = data.aws_region.this.name
-      abbr        = local.lookup.region.abbr["${data.aws_region.this.name}"]
+      abbr        = local.lookup.region.abbr[data.aws_region.this.name]
       description = data.aws_region.this.description
     }
   }

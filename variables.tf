@@ -93,3 +93,50 @@ variable "vpc_id" {
     error_message = "VPC ID not Specified."
   }
 }
+
+variable "max_capacity" {
+  description = "Maximum RPU capacity for the workgroup (4-1024 RPUs)"
+  type        = number
+  default     = null
+  validation {
+    condition = var.max_capacity == null || (
+      var.max_capacity == 4 || 
+      (var.max_capacity >= 8 && var.max_capacity <= 512 && var.max_capacity % 8 == 0) ||
+      (var.max_capacity > 512 && var.max_capacity <= 1024 && var.max_capacity % 32 == 0)
+    )
+    error_message = "Max capacity must be 4, or in units of 8 from 8-512, or in units of 32 from 512-1024 RPUs."
+  }
+}
+
+variable "usage_limits" {
+  description = "Usage limits configuration for RPU consumption"
+  type = list(object({
+    amount        = number
+    period        = string
+    usage_type    = optional(string, "serverless-compute")
+    breach_action = optional(string, "log")
+  }))
+  default = []
+  validation {
+    condition = alltrue([
+      for limit in var.usage_limits : contains(["daily", "weekly", "monthly"], limit.period)
+    ])
+    error_message = "Period must be one of: daily, weekly, monthly."
+  }
+  validation {
+    condition = alltrue([
+      for limit in var.usage_limits : contains(["serverless-compute", "cross-region-datasharing"], limit.usage_type)
+    ])
+    error_message = "Usage type must be one of: serverless-compute, cross-region-datasharing."
+  }
+  validation {
+    condition = alltrue([
+      for limit in var.usage_limits : contains(["log", "emit-metric", "deactivate"], limit.breach_action)
+    ])
+    error_message = "Breach action must be one of: log, emit-metric, deactivate."
+  }
+  validation {
+    condition = length(var.usage_limits) <= 4
+    error_message = "Maximum of 4 usage limits can be configured."
+  }
+}
