@@ -50,6 +50,7 @@ output "metadata" {
         tags                 = try(aws_redshiftserverless_namespace.this.tags, null)
       }
       workgroup = try(aws_redshiftserverless_workgroup.this, null)
+      usage_limits = try(aws_redshiftserverless_usage_limit.this, [])
     }
 
     security_group = try(aws_security_group.this, null)
