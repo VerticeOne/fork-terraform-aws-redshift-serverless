@@ -6,6 +6,4 @@ resource "aws_redshiftserverless_usage_limit" "this" {
   amount          = var.usage_limits[count.index].amount
   period          = var.usage_limits[count.index].period
   breach_action   = var.usage_limits[count.index].breach_action
-
-  tags = local.tags
 }
