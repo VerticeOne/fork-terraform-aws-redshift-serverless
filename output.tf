@@ -49,10 +49,36 @@ output "metadata" {
         namespace_name       = try(aws_redshiftserverless_namespace.this.namespace_name, null)
         tags                 = try(aws_redshiftserverless_namespace.this.tags, null)
       }
-      workgroup = try(aws_redshiftserverless_workgroup.this, null)
+      workgroup    = try(aws_redshiftserverless_workgroup.this, null)
       usage_limits = try(aws_redshiftserverless_usage_limit.this, [])
     }
 
     security_group = try(aws_security_group.this, null)
+
+    monitoring = {
+      enabled = local.monitoring_enabled
+      dashboard = {
+        name = try(aws_cloudwatch_dashboard.this[0].dashboard_name, null)
+        arn  = try(aws_cloudwatch_dashboard.this[0].dashboard_arn, null)
+      }
+      alarms = {
+        compute_capacity_warning      = try(aws_cloudwatch_metric_alarm.compute_capacity_warning[0].arn, null)
+        compute_capacity_critical     = try(aws_cloudwatch_metric_alarm.compute_capacity_critical[0].arn, null)
+        compute_seconds_warning       = try(aws_cloudwatch_metric_alarm.compute_seconds_warning[0].arn, null)
+        compute_seconds_critical      = try(aws_cloudwatch_metric_alarm.compute_seconds_critical[0].arn, null)
+        database_connections_warning  = try(aws_cloudwatch_metric_alarm.database_connections_warning[0].arn, null)
+        database_connections_critical = try(aws_cloudwatch_metric_alarm.database_connections_critical[0].arn, null)
+        queries_failed                = try(aws_cloudwatch_metric_alarm.queries_failed[0].arn, null)
+        data_storage_warning          = try(aws_cloudwatch_metric_alarm.data_storage_warning[0].arn, null)
+        data_storage_critical         = try(aws_cloudwatch_metric_alarm.data_storage_critical[0].arn, null)
+        queries_queued                = try(aws_cloudwatch_metric_alarm.queries_queued[0].arn, null)
+      }
+      query_definitions = {
+        error_logs           = try(aws_cloudwatch_query_definition.error_logs[0].query_definition_id, null)
+        failed_connections   = try(aws_cloudwatch_query_definition.failed_connections[0].query_definition_id, null)
+        user_activity        = try(aws_cloudwatch_query_definition.user_activity_summary[0].query_definition_id, null)
+        long_running_queries = try(aws_cloudwatch_query_definition.long_running_queries[0].query_definition_id, null)
+      }
+    }
   }
 }

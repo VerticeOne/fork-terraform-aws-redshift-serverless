@@ -100,7 +100,7 @@ variable "max_capacity" {
   default     = null
   validation {
     condition = var.max_capacity == null || (
-      var.max_capacity == 4 || 
+      var.max_capacity == 4 ||
       (var.max_capacity >= 8 && var.max_capacity <= 512 && var.max_capacity % 8 == 0) ||
       (var.max_capacity > 512 && var.max_capacity <= 1024 && var.max_capacity % 32 == 0)
     )
@@ -136,7 +136,84 @@ variable "usage_limits" {
     error_message = "Breach action must be one of: log, emit-metric, deactivate."
   }
   validation {
-    condition = length(var.usage_limits) <= 4
+    condition     = length(var.usage_limits) <= 4
     error_message = "Maximum of 4 usage limits can be configured."
   }
+}
+
+variable "monitoring" {
+  description = "Monitoring configuration for CloudWatch dashboard, alarms, and log queries"
+  type = object({
+    enabled = optional(bool, true)
+
+    # SNS Topic ARN for alarm notifications
+    # If null (default), alarms are created but won't send notifications
+    sns_topic_arn = optional(string, null)
+
+    # Dashboard configuration
+    dashboard = optional(object({
+      enabled = optional(bool, true)
+    }), {})
+
+    # CloudWatch Logs Insights query definitions
+    query_definitions = optional(object({
+      enabled = optional(bool, true)
+    }), {})
+
+    # Alarm configurations with customizable thresholds
+    alarms = optional(object({
+      # Compute capacity alarm - dual threshold (warning + critical)
+      compute_capacity_high = optional(object({
+        enabled            = optional(bool, true)
+        warning_threshold  = optional(number, 70) # % of max_capacity or base_capacity
+        critical_threshold = optional(number, 90) # % of max_capacity or base_capacity
+        evaluation_periods = optional(number, 3)
+        period             = optional(number, 300)
+      }), {})
+
+      # Compute seconds alarm - dual threshold (warning + critical)
+      compute_seconds_high = optional(object({
+        enabled            = optional(bool, true)
+        warning_threshold  = optional(number, 7500)  # RPU-seconds per period
+        critical_threshold = optional(number, 10000) # RPU-seconds per period
+        evaluation_periods = optional(number, 3)
+        period             = optional(number, 300)
+      }), {})
+
+      # Database connections alarm - dual threshold (warning + critical)
+      database_connections_high = optional(object({
+        enabled            = optional(bool, true)
+        warning_threshold  = optional(number, 300) # Number of connections
+        critical_threshold = optional(number, 400) # Number of connections
+        evaluation_periods = optional(number, 2)
+        period             = optional(number, 300)
+      }), {})
+
+      # Queries failed alarm - single threshold
+      queries_failed = optional(object({
+        enabled            = optional(bool, true)
+        threshold          = optional(number, 5) # Failed queries per period
+        evaluation_periods = optional(number, 1)
+        period             = optional(number, 300)
+      }), {})
+
+      # Data storage alarm - dual threshold (warning + critical)
+      data_storage_high = optional(object({
+        enabled            = optional(bool, true)
+        warning_threshold  = optional(number, 60) # GB
+        critical_threshold = optional(number, 80) # GB
+        evaluation_periods = optional(number, 1)
+        period             = optional(number, 3600)
+      }), {})
+
+      # Queries queued alarm - single threshold
+      queries_queued_high = optional(object({
+        enabled            = optional(bool, true)
+        threshold          = optional(number, 10) # Queued queries
+        evaluation_periods = optional(number, 2)
+        period             = optional(number, 60)
+      }), {})
+    }), {})
+  })
+  default = {}
 }
