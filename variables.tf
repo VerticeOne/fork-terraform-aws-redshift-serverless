@@ -146,71 +146,74 @@ variable "monitoring" {
   type = object({
     enabled = optional(bool, true)
 
-    # SNS Topic ARN for alarm notifications
-    # If null (default), alarms are created but won't send notifications
     sns_topic_arn = optional(string, null)
 
-    # Dashboard configuration
     dashboard = optional(object({
       enabled = optional(bool, true)
     }), {})
 
-    # CloudWatch Logs Insights query definitions
     query_definitions = optional(object({
       enabled = optional(bool, true)
     }), {})
 
-    # Alarm configurations with customizable thresholds
+    cost_monitoring = optional(object({
+      enabled                        = optional(bool, false)
+      anomaly_monitor_arn            = optional(string, null)
+      anomaly_threshold_percentage   = optional(number, 25)
+      anomaly_notification_frequency = optional(string, "IMMEDIATE")
+    }), {})
+
     alarms = optional(object({
-      # Compute capacity alarm - dual threshold (warning + critical)
       compute_capacity_high = optional(object({
         enabled            = optional(bool, true)
-        warning_threshold  = optional(number, 70) # % of max_capacity or base_capacity
-        critical_threshold = optional(number, 90) # % of max_capacity or base_capacity
+        warning_threshold  = optional(number, 70)
+        critical_threshold = optional(number, 90)
         evaluation_periods = optional(number, 3)
         period             = optional(number, 300)
       }), {})
 
-      # Compute seconds alarm - dual threshold (warning + critical)
       compute_seconds_high = optional(object({
         enabled            = optional(bool, true)
-        warning_threshold  = optional(number, 7500)  # RPU-seconds per period
-        critical_threshold = optional(number, 10000) # RPU-seconds per period
+        warning_threshold  = optional(number, 7500)
+        critical_threshold = optional(number, 10000)
         evaluation_periods = optional(number, 3)
         period             = optional(number, 300)
       }), {})
 
-      # Database connections alarm - dual threshold (warning + critical)
       database_connections_high = optional(object({
         enabled            = optional(bool, true)
-        warning_threshold  = optional(number, 300) # Number of connections
-        critical_threshold = optional(number, 400) # Number of connections
+        warning_threshold  = optional(number, 300)
+        critical_threshold = optional(number, 400)
         evaluation_periods = optional(number, 2)
         period             = optional(number, 300)
       }), {})
 
-      # Queries failed alarm - single threshold
       queries_failed = optional(object({
         enabled            = optional(bool, true)
-        threshold          = optional(number, 5) # Failed queries per period
+        threshold          = optional(number, 5)
         evaluation_periods = optional(number, 1)
         period             = optional(number, 300)
       }), {})
 
-      # Data storage alarm - dual threshold (warning + critical)
       data_storage_high = optional(object({
         enabled            = optional(bool, true)
-        warning_threshold  = optional(number, 60) # GB
-        critical_threshold = optional(number, 80) # GB
+        warning_threshold  = optional(number, 60)
+        critical_threshold = optional(number, 80)
         evaluation_periods = optional(number, 1)
         period             = optional(number, 3600)
       }), {})
 
-      # Queries queued alarm - single threshold
       queries_queued_high = optional(object({
         enabled            = optional(bool, true)
-        threshold          = optional(number, 10) # Queued queries
+        threshold          = optional(number, 10)
         evaluation_periods = optional(number, 2)
+        period             = optional(number, 60)
+      }), {})
+
+      query_runtime_exceeded = optional(object({
+        enabled            = optional(bool, true)
+        threshold_seconds  = optional(number, 60)
+        evaluation_periods = optional(number, 1)
         period             = optional(number, 60)
       }), {})
     }), {})

@@ -72,12 +72,18 @@ output "metadata" {
         data_storage_warning          = try(aws_cloudwatch_metric_alarm.data_storage_warning[0].arn, null)
         data_storage_critical         = try(aws_cloudwatch_metric_alarm.data_storage_critical[0].arn, null)
         queries_queued                = try(aws_cloudwatch_metric_alarm.queries_queued[0].arn, null)
+        query_runtime_exceeded        = try(aws_cloudwatch_metric_alarm.query_runtime_exceeded[0].arn, null)
       }
       query_definitions = {
         error_logs           = try(aws_cloudwatch_query_definition.error_logs[0].query_definition_id, null)
         failed_connections   = try(aws_cloudwatch_query_definition.failed_connections[0].query_definition_id, null)
         user_activity        = try(aws_cloudwatch_query_definition.user_activity_summary[0].query_definition_id, null)
         long_running_queries = try(aws_cloudwatch_query_definition.long_running_queries[0].query_definition_id, null)
+      }
+      cost_monitoring = {
+        enabled                  = local.cost_monitoring_enabled
+        anomaly_monitor_arn      = try(var.monitoring.cost_monitoring.anomaly_monitor_arn, null)
+        anomaly_subscription_arn = try(aws_ce_anomaly_subscription.redshift_serverless[0].arn, null)
       }
     }
   }
