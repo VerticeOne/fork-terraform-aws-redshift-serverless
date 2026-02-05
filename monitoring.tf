@@ -3,6 +3,7 @@
 # - Dashboard with metrics overview and log widget
 # - Metric alarms with configurable thresholds
 # - CloudWatch Logs Insights query definitions
+# - Cost monitoring with anomaly detection
 ##-----------------------------------------------------------------------------
 
 ##-----------------------------------------------------------------------------
@@ -11,22 +12,21 @@ locals {
   monitoring_enabled        = try(var.monitoring.enabled, true)
   dashboard_enabled         = local.monitoring_enabled && try(var.monitoring.dashboard.enabled, true)
   query_definitions_enabled = local.monitoring_enabled && try(var.monitoring.query_definitions.enabled, true)
+  cost_monitoring_enabled   = local.monitoring_enabled && try(var.monitoring.cost_monitoring.enabled, false)
   sns_topic_arn             = try(var.monitoring.sns_topic_arn, null)
   alarm_actions             = local.sns_topic_arn != null ? [local.sns_topic_arn] : []
   ok_actions                = local.sns_topic_arn != null ? [local.sns_topic_arn] : []
 
-  # Alarm configurations with defaults
   alarm_compute_capacity     = try(var.monitoring.alarms.compute_capacity_high, {})
   alarm_compute_seconds      = try(var.monitoring.alarms.compute_seconds_high, {})
   alarm_database_connections = try(var.monitoring.alarms.database_connections_high, {})
   alarm_queries_failed       = try(var.monitoring.alarms.queries_failed, {})
   alarm_data_storage         = try(var.monitoring.alarms.data_storage_high, {})
   alarm_queries_queued       = try(var.monitoring.alarms.queries_queued_high, {})
+  alarm_query_runtime        = try(var.monitoring.alarms.query_runtime_exceeded, {})
 
-  # Capacity reference for percentage-based thresholds
   capacity_reference = coalesce(var.max_capacity, var.base_capacity)
 
-  # CloudWatch metric dimensions
   workgroup_dimension = {
     Workgroup = var.name
   }
@@ -43,8 +43,7 @@ resource "aws_cloudwatch_dashboard" "this" {
   dashboard_name = "rs-${var.name}"
 
   dashboard_body = jsonencode({
-    widgets = [
-      # Row 1: Title
+    widgets = concat([
       {
         type   = "text"
         x      = 0
@@ -55,7 +54,6 @@ resource "aws_cloudwatch_dashboard" "this" {
           markdown = "# Redshift Serverless: ${var.name}\n**Namespace:** ${var.name} | **Region:** ${data.aws_region.this.name} | **Base Capacity:** ${var.base_capacity} RPUs"
         }
       },
-      # Row 2: Compute Capacity and Compute Seconds
       {
         type   = "metric"
         x      = 0
@@ -110,7 +108,6 @@ resource "aws_cloudwatch_dashboard" "this" {
           }
         }
       },
-      # Row 3: Database Connections and Query Performance
       {
         type   = "metric"
         x      = 0
@@ -140,54 +137,6 @@ resource "aws_cloudwatch_dashboard" "this" {
         width  = 12
         height = 6
         properties = {
-          title  = "Query Performance"
-          region = data.aws_region.this.name
-          metrics = [
-            ["AWS/Redshift-Serverless", "QueriesSucceeded", "Workgroup", var.name, { stat = "Sum", label = "Succeeded", color = "#2ca02c" }],
-            [".", "QueriesFailed", ".", ".", { stat = "Sum", label = "Failed", color = "#d62728" }]
-          ]
-          period  = 300
-          view    = "timeSeries"
-          stacked = false
-          yAxis = {
-            left = {
-              min   = 0
-              label = "Queries"
-            }
-          }
-        }
-      },
-      # Row 4: Running/Queued Queries and Data Storage
-      {
-        type   = "metric"
-        x      = 0
-        y      = 13
-        width  = 12
-        height = 6
-        properties = {
-          title  = "Running & Queued Queries"
-          region = data.aws_region.this.name
-          metrics = [
-            ["AWS/Redshift-Serverless", "QueriesRunning", "Workgroup", var.name, { stat = "Average", label = "Running", color = "#1f77b4" }],
-            [".", "QueriesQueued", ".", ".", { stat = "Average", label = "Queued", color = "#ff7f0e" }]
-          ]
-          period = 60
-          view   = "timeSeries"
-          yAxis = {
-            left = {
-              min   = 0
-              label = "Queries"
-            }
-          }
-        }
-      },
-      {
-        type   = "metric"
-        x      = 12
-        y      = 13
-        width  = 12
-        height = 6
-        properties = {
           title  = "Data Storage"
           region = data.aws_region.this.name
           metrics = [
@@ -203,21 +152,172 @@ resource "aws_cloudwatch_dashboard" "this" {
           }
         }
       },
-      # Row 5: Recent Logs (CloudWatch Logs Insights)
+      {
+        type   = "metric"
+        x      = 0
+        y      = 13
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Queries Succeeded"
+          region = data.aws_region.this.name
+          metrics = [
+            [ "AWS/Redshift-Serverless", "QueriesSucceeded", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id": "m1" } ],
+            [ "...", "OTHER", { "id": "m2" } ],
+            [ "...", "INSERT", { "id": "m3" } ],
+            [ "...", "CTAS", { "id": "m4" } ]
+          ]
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
+          yAxis = {
+            left = {
+              min   = 0
+              label = "Queries"
+            }
+          }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 13
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Queries Running"
+          region = data.aws_region.this.name
+          metrics = [
+            [ "AWS/Redshift-Serverless", "QueriesRunning", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id": "m1" } ],
+            [ "...", "OTHER", { "id": "m2" } ],
+            [ "...", "INSERT", { "id": "m3" } ],
+            [ "...", "CTAS", { "id": "m4" } ]
+          ]
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
+          yAxis = {
+            left = {
+              min   = 0
+              label = "Queries"
+            }
+          }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 19
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Queries Failed"
+          region = data.aws_region.this.name
+          metrics = [
+            [ "AWS/Redshift-Serverless", "QueriesFailed", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id": "m1" } ],
+            [ "...", "OTHER", { "id": "m2" } ],
+            [ "...", "INSERT", { "id": "m3" } ],
+            [ "...", "CTAS", { "id": "m4" } ]
+          ]
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
+          yAxis = {
+            left = {
+              min   = 0
+              label = "Queries"
+            }
+          }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 19
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Queries Queued"
+          region = data.aws_region.this.name
+          metrics = [
+            [ "AWS/Redshift-Serverless", "QueriesQueued", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id": "m1" } ],
+            [ "...", "OTHER", { "id": "m2" } ],
+            [ "...", "INSERT", { "id": "m3" } ],
+            [ "...", "CTAS", { "id": "m4" } ]
+          ]
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
+          yAxis = {
+            left = {
+              min   = 0
+              label = "Queries"
+            }
+          }
+        }
+      },
       {
         type   = "log"
         x      = 0
-        y      = 19
+        y      = 25
         width  = 24
         height = 8
         properties = {
           title  = "Recent Database Logs"
           region = data.aws_region.this.name
-          query  = "SOURCE '/aws/redshift/${var.name}/' | fields @timestamp, @message, @logStream | filter @message like /(?i)(error|fail|denied|warning|timeout)/ | sort @timestamp desc | limit 100"
+          query  = <<-EOT
+                   SOURCE '/aws/redshift/${var.name}/' |
+                   SOURCE '/aws/redshift/${var.name}/connectionlog' |
+                   SOURCE '/aws/redshift/${var.name}/userlog' |
+                   SOURCE '/aws/redshift/${var.name}/useractivitylog' |
+                   fields @timestamp, @message, @logStream
+                   | filter @message like /(?i)(error|fail|denied|warning|timeout)/
+                   | filter @message not like /(?i)SET statement_timeout TO/
+                   | filter @message not like /(?i) ]' LOG: select /
+                   | sort @timestamp desc
+                   | limit 1000
+          EOT
           view   = "table"
         }
       }
-    ]
+      ],
+      local.cost_monitoring_enabled ? [
+        {
+          type   = "text"
+          x      = 0
+          y      = 33
+          width  = 24
+          height = 1
+          properties = {
+            markdown = "## Cost Monitoring"
+          }
+        }
+      ] : [],
+      local.cost_monitoring_enabled ? [
+        {
+          type   = "metric"
+          x      = 0
+          y      = 34
+          width  = 24
+          height = 6
+          properties = {
+            title   = "Estimated Costs (via ComputeSeconds)"
+            region  = data.aws_region.this.name
+            view    = "timeSeries"
+            stacked = false
+            metrics = [
+              ["AWS/Redshift-Serverless", "ComputeSeconds", "Workgroup", var.name, { stat = "Sum", label = "RPU-Seconds", period = 3600 }]
+            ]
+            yAxis = {
+              left = {
+                min   = 0
+                label = "RPU-Seconds per Hour"
+              }
+            }
+          }
+        }
+      ] : []
+    )
   })
 }
 
@@ -384,9 +484,8 @@ resource "aws_cloudwatch_metric_alarm" "data_storage_warning" {
   namespace           = "AWS/Redshift-Serverless"
   period              = try(local.alarm_data_storage.period, 3600)
   statistic           = "Average"
-  # Convert GB to bytes (DataStorage metric is in bytes)
-  threshold          = try(local.alarm_data_storage.warning_threshold, 60) * 1024 * 1024 * 1024
-  treat_missing_data = "notBreaching"
+  threshold           = try(local.alarm_data_storage.warning_threshold, 60) * 1024 * 1024 * 1024
+  treat_missing_data  = "notBreaching"
 
   dimensions = local.namespace_dimension
 
@@ -405,9 +504,8 @@ resource "aws_cloudwatch_metric_alarm" "data_storage_critical" {
   namespace           = "AWS/Redshift-Serverless"
   period              = try(local.alarm_data_storage.period, 3600)
   statistic           = "Average"
-  # Convert GB to bytes (DataStorage metric is in bytes)
-  threshold          = try(local.alarm_data_storage.critical_threshold, 80) * 1024 * 1024 * 1024
-  treat_missing_data = "notBreaching"
+  threshold           = try(local.alarm_data_storage.critical_threshold, 80) * 1024 * 1024 * 1024
+  treat_missing_data  = "notBreaching"
 
   dimensions = local.namespace_dimension
 
@@ -511,4 +609,71 @@ resource "aws_cloudwatch_query_definition" "long_running_queries" {
     | sort duration_ms desc
     | limit 100
   EOF
+}
+
+##-----------------------------------------------------------------------------
+# CloudWatch Logs Metric Filter - Long Running Queries
+resource "aws_cloudwatch_log_metric_filter" "long_running_queries" {
+  count = local.monitoring_enabled && try(local.alarm_query_runtime.enabled, true) ? 1 : 0
+
+  name           = "rs-${var.name}-long-running-queries"
+  log_group_name = aws_cloudwatch_log_group.this.name
+  pattern        = "[timestamp, user, database, pid, userid, xid, querylabel, querytext, duration>=60000000]"
+
+  metric_transformation {
+    name          = "LongRunningQueries"
+    namespace     = "Redshift-Serverless/${var.name}"
+    value         = "1"
+    default_value = "0"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "query_runtime_exceeded" {
+  count = local.monitoring_enabled && try(local.alarm_query_runtime.enabled, true) ? 1 : 0
+
+  alarm_name          = "rs-${var.name}-query-runtime-exceeded"
+  alarm_description   = "Redshift Serverless query runtime exceeded ${try(local.alarm_query_runtime.threshold_seconds, 60)} seconds for ${var.name}"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = try(local.alarm_query_runtime.evaluation_periods, 1)
+  metric_name         = "LongRunningQueries"
+  namespace           = "Redshift-Serverless/${var.name}"
+  period              = try(local.alarm_query_runtime.period, 60)
+  statistic           = "Sum"
+  threshold           = 0
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = local.alarm_actions
+  ok_actions    = local.ok_actions
+
+  tags = local.tags
+
+  depends_on = [aws_cloudwatch_log_metric_filter.long_running_queries]
+}
+
+##-----------------------------------------------------------------------------
+# Cost Monitoring - CE Anomaly Subscription
+resource "aws_ce_anomaly_subscription" "redshift_serverless" {
+  count = local.cost_monitoring_enabled && local.sns_topic_arn != null && try(var.monitoring.cost_monitoring.anomaly_monitor_arn, null) != null ? 1 : 0
+
+  name      = "rs-${var.name}-cost-anomaly"
+  frequency = try(var.monitoring.cost_monitoring.anomaly_notification_frequency, "IMMEDIATE")
+
+  monitor_arn_list = [
+    var.monitoring.cost_monitoring.anomaly_monitor_arn
+  ]
+
+  subscriber {
+    type    = "SNS"
+    address = local.sns_topic_arn
+  }
+
+  threshold_expression {
+    dimension {
+      key           = "ANOMALY_TOTAL_IMPACT_PERCENTAGE"
+      match_options = ["GREATER_THAN_OR_EQUAL"]
+      values        = [tostring(try(var.monitoring.cost_monitoring.anomaly_threshold_percentage, 25))]
+    }
+  }
+
+  tags = local.tags
 }
