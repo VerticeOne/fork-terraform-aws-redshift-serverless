@@ -162,7 +162,7 @@ resource "aws_cloudwatch_dashboard" "this" {
           title  = "Queries Succeeded"
           region = data.aws_region.this.name
           metrics = [
-            ["AWS/Redshift-Serverless", "QueriesSucceeded", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id" : "m1" }],
+            ["AWS/Redshift-Serverless", "QueriesSucceeded", "Workgroup", var.name, "QueryType", "SELECT", { "id" : "m1" }],
             ["...", "OTHER", { "id" : "m2" }],
             ["...", "INSERT", { "id" : "m3" }],
             ["...", "CTAS", { "id" : "m4" }]
@@ -188,7 +188,7 @@ resource "aws_cloudwatch_dashboard" "this" {
           title  = "Queries Running"
           region = data.aws_region.this.name
           metrics = [
-            ["AWS/Redshift-Serverless", "QueriesRunning", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id" : "m1" }],
+            ["AWS/Redshift-Serverless", "QueriesRunning", "Workgroup", var.name, "QueryType", "SELECT", { "id" : "m1" }],
             ["...", "OTHER", { "id" : "m2" }],
             ["...", "INSERT", { "id" : "m3" }],
             ["...", "CTAS", { "id" : "m4" }]
@@ -214,7 +214,7 @@ resource "aws_cloudwatch_dashboard" "this" {
           title  = "Queries Failed"
           region = data.aws_region.this.name
           metrics = [
-            ["AWS/Redshift-Serverless", "QueriesFailed", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id" : "m1" }],
+            ["AWS/Redshift-Serverless", "QueriesFailed", "Workgroup", var.name, "QueryType", "SELECT", { "id" : "m1" }],
             ["...", "OTHER", { "id" : "m2" }],
             ["...", "INSERT", { "id" : "m3" }],
             ["...", "CTAS", { "id" : "m4" }]
@@ -240,7 +240,7 @@ resource "aws_cloudwatch_dashboard" "this" {
           title  = "Queries Queued"
           region = data.aws_region.this.name
           metrics = [
-            ["AWS/Redshift-Serverless", "QueriesQueued", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id" : "m1" }],
+            ["AWS/Redshift-Serverless", "QueriesQueued", "Workgroup", var.name, "QueryType", "SELECT", { "id" : "m1" }],
             ["...", "OTHER", { "id" : "m2" }],
             ["...", "INSERT", { "id" : "m3" }],
             ["...", "CTAS", { "id" : "m4" }]
@@ -341,6 +341,7 @@ resource "aws_cloudwatch_dashboard" "this" {
             region  = data.aws_region.this.name
             view    = "timeSeries"
             stacked = false
+            period  = 300
             metrics = [
               ["Redshift-Serverless/${var.name}", "QueryPlanningTimeMax", "Workgroup", var.name, { stat = "Maximum", label = "Max Planning Time" }]
             ]

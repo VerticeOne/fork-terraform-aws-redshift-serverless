@@ -43,6 +43,7 @@ sns = boto3.client('sns') if SNS_TOPIC_ARN else None
 
 
 def handler(event, context):
+    lookback = int(LOOKBACK_MINUTES)
     query = f"""
         SELECT
             query_id,
@@ -55,7 +56,7 @@ def handler(event, context):
             execution_time,
             queue_time
         FROM sys_query_history
-        WHERE start_time > DATEADD(minute, -{LOOKBACK_MINUTES}, GETDATE())
+        WHERE start_time > DATEADD(minute, -{lookback}, GETDATE())
           AND status = 'success'
         ORDER BY planning_time DESC
         LIMIT 50

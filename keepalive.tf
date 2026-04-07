@@ -4,7 +4,7 @@
 ##-----------------------------------------------------------------------------
 
 locals {
-  keepalive_enabled = var.keepalive != null ? var.keepalive.enabled : false
+  keepalive_enabled = try(var.keepalive.enabled, false)
 }
 
 ##-----------------------------------------------------------------------------
@@ -103,13 +103,6 @@ resource "aws_iam_role_policy_attachment" "keepalive_basic_execution" {
 
   role       = aws_iam_role.keepalive[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role_policy_attachment" "keepalive_vpc_access" {
-  count = local.keepalive_enabled ? 1 : 0
-
-  role       = aws_iam_role.keepalive[0].name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 ##-----------------------------------------------------------------------------
