@@ -141,6 +141,15 @@ variable "usage_limits" {
   }
 }
 
+variable "keepalive" {
+  description = "Keepalive configuration to prevent Redshift Serverless from scaling to zero"
+  type = object({
+    enabled           = optional(bool, false)
+    schedule_interval = optional(number, 1)
+  })
+  default = null
+}
+
 variable "monitoring" {
   description = "Monitoring configuration for CloudWatch dashboard, alarms, and log queries"
   type = object({
@@ -161,6 +170,13 @@ variable "monitoring" {
       anomaly_monitor_arn            = optional(string, null)
       anomaly_threshold_percentage   = optional(number, 25)
       anomaly_notification_frequency = optional(string, "IMMEDIATE")
+    }), {})
+
+    query_planning_monitor = optional(object({
+      enabled                = optional(bool, false)
+      threshold_seconds      = optional(number, 300)
+      check_interval_minutes = optional(number, 5)
+      lookback_minutes       = optional(number, 10)
     }), {})
 
     alarms = optional(object({
