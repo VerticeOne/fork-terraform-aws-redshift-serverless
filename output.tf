@@ -85,6 +85,19 @@ output "metadata" {
         anomaly_monitor_arn      = try(var.monitoring.cost_monitoring.anomaly_monitor_arn, null)
         anomaly_subscription_arn = try(aws_ce_anomaly_subscription.redshift_serverless[0].arn, null)
       }
+      query_planning_monitor = {
+        enabled       = local.query_planning_monitor_enabled
+        lambda_arn    = try(aws_lambda_function.query_planning_monitor[0].arn, null)
+        event_rule    = try(aws_cloudwatch_event_rule.query_planning_monitor[0].name, null)
+        log_group_arn = try(aws_cloudwatch_log_group.query_planning_monitor[0].arn, null)
+      }
+    }
+
+    keepalive = {
+      enabled       = local.keepalive_enabled
+      lambda_arn    = try(aws_lambda_function.keepalive[0].arn, null)
+      event_rule    = try(aws_cloudwatch_event_rule.keepalive[0].name, null)
+      log_group_arn = try(aws_cloudwatch_log_group.keepalive[0].arn, null)
     }
   }
 }

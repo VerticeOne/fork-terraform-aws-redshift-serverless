@@ -162,10 +162,10 @@ resource "aws_cloudwatch_dashboard" "this" {
           title  = "Queries Succeeded"
           region = data.aws_region.this.name
           metrics = [
-            [ "AWS/Redshift-Serverless", "QueriesSucceeded", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id": "m1" } ],
-            [ "...", "OTHER", { "id": "m2" } ],
-            [ "...", "INSERT", { "id": "m3" } ],
-            [ "...", "CTAS", { "id": "m4" } ]
+            ["AWS/Redshift-Serverless", "QueriesSucceeded", "Workgroup", var.name, "QueryType", "SELECT", { "id" : "m1" }],
+            ["...", "OTHER", { "id" : "m2" }],
+            ["...", "INSERT", { "id" : "m3" }],
+            ["...", "CTAS", { "id" : "m4" }]
           ]
           period  = 300
           view    = "timeSeries"
@@ -188,10 +188,10 @@ resource "aws_cloudwatch_dashboard" "this" {
           title  = "Queries Running"
           region = data.aws_region.this.name
           metrics = [
-            [ "AWS/Redshift-Serverless", "QueriesRunning", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id": "m1" } ],
-            [ "...", "OTHER", { "id": "m2" } ],
-            [ "...", "INSERT", { "id": "m3" } ],
-            [ "...", "CTAS", { "id": "m4" } ]
+            ["AWS/Redshift-Serverless", "QueriesRunning", "Workgroup", var.name, "QueryType", "SELECT", { "id" : "m1" }],
+            ["...", "OTHER", { "id" : "m2" }],
+            ["...", "INSERT", { "id" : "m3" }],
+            ["...", "CTAS", { "id" : "m4" }]
           ]
           period  = 300
           view    = "timeSeries"
@@ -214,10 +214,10 @@ resource "aws_cloudwatch_dashboard" "this" {
           title  = "Queries Failed"
           region = data.aws_region.this.name
           metrics = [
-            [ "AWS/Redshift-Serverless", "QueriesFailed", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id": "m1" } ],
-            [ "...", "OTHER", { "id": "m2" } ],
-            [ "...", "INSERT", { "id": "m3" } ],
-            [ "...", "CTAS", { "id": "m4" } ]
+            ["AWS/Redshift-Serverless", "QueriesFailed", "Workgroup", var.name, "QueryType", "SELECT", { "id" : "m1" }],
+            ["...", "OTHER", { "id" : "m2" }],
+            ["...", "INSERT", { "id" : "m3" }],
+            ["...", "CTAS", { "id" : "m4" }]
           ]
           period  = 300
           view    = "timeSeries"
@@ -240,10 +240,10 @@ resource "aws_cloudwatch_dashboard" "this" {
           title  = "Queries Queued"
           region = data.aws_region.this.name
           metrics = [
-            [ "AWS/Redshift-Serverless", "QueriesQueued", "Workgroup", "agents-kb", "QueryType", "SELECT", { "id": "m1" } ],
-            [ "...", "OTHER", { "id": "m2" } ],
-            [ "...", "INSERT", { "id": "m3" } ],
-            [ "...", "CTAS", { "id": "m4" } ]
+            ["AWS/Redshift-Serverless", "QueriesQueued", "Workgroup", var.name, "QueryType", "SELECT", { "id" : "m1" }],
+            ["...", "OTHER", { "id" : "m2" }],
+            ["...", "INSERT", { "id" : "m3" }],
+            ["...", "CTAS", { "id" : "m4" }]
           ]
           period  = 300
           view    = "timeSeries"
@@ -313,6 +313,52 @@ resource "aws_cloudwatch_dashboard" "this" {
                 min   = 0
                 label = "RPU-Seconds per Hour"
               }
+            }
+          }
+        }
+      ] : [],
+      local.query_planning_monitor_enabled ? [
+        {
+          type   = "text"
+          x      = 0
+          y      = 40
+          width  = 24
+          height = 1
+          properties = {
+            markdown = "## Query Planning Monitor"
+          }
+        }
+      ] : [],
+      local.query_planning_monitor_enabled ? [
+        {
+          type   = "metric"
+          x      = 0
+          y      = 41
+          width  = 24
+          height = 6
+          properties = {
+            title   = "Query Planning Time (Max)"
+            region  = data.aws_region.this.name
+            view    = "timeSeries"
+            stacked = false
+            period  = 300
+            metrics = [
+              ["Redshift-Serverless/${var.name}", "QueryPlanningTimeMax", "Workgroup", var.name, { stat = "Maximum", label = "Max Planning Time" }]
+            ]
+            yAxis = {
+              left = {
+                min   = 0
+                label = "Seconds"
+              }
+            }
+            annotations = {
+              horizontal = [
+                {
+                  value = local.query_planning_threshold
+                  label = "Alert Threshold"
+                  color = "#ff7f0e"
+                }
+              ]
             }
           }
         }

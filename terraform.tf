@@ -14,5 +14,9 @@ terraform {
       source  = "hashicorp/null"
       version = ">= 3.2.4, < 4.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = ">= 2.7.0, < 3.0"
+    }
   }
 }
