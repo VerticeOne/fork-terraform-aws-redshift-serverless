@@ -7,7 +7,7 @@ resource "aws_redshiftserverless_namespace" "this" {
   admin_username      = try(var.credentials.master.username, null)
   admin_user_password = local.master_password
 
-  iam_roles            = [aws_iam_role.this.arn]
+  iam_roles            = distinct(concat([aws_iam_role.this.arn], var.additional_iam_role_arns))
   default_iam_role_arn = aws_iam_role.this.arn
 
   log_exports = var.log_exports

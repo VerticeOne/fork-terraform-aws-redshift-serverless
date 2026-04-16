@@ -1,3 +1,9 @@
+variable "additional_iam_role_arns" {
+  description = "Additional IAM role ARNs to associate with the Redshift Serverless namespace, beyond the default module-managed role."
+  type        = list(string)
+  default     = []
+}
+
 variable "base_capacity" {
   description = "Base Capacity"
   type        = number
