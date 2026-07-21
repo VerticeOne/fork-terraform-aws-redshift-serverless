@@ -10,5 +10,10 @@ resource "aws_redshiftserverless_workgroup" "this" {
   security_group_ids = [aws_security_group.this.id]
   subnet_ids         = local.subnet.ids
 
+  config_parameter {
+    parameter_key   = "require_ssl"
+    parameter_value = "true"
+  }
+
   tags = local.tags
 }
