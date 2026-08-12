@@ -9,6 +9,16 @@ resource "aws_security_group_rule" "ingress" {
   description       = try(each.value["description"], null)
 }
 
+resource "aws_security_group_rule" "ingress_self" {
+  security_group_id        = aws_security_group.this.id
+  type                     = "ingress"
+  protocol                 = "-1"
+  from_port                = 0
+  to_port                  = 0
+  source_security_group_id = aws_security_group.this.id
+  description              = "Allow connections within the security group"
+}
+
 resource "aws_security_group_rule" "egress" {
   security_group_id = aws_security_group.this.id
   type              = "egress"
