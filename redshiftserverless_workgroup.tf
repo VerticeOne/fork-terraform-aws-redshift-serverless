@@ -25,6 +25,14 @@ resource "aws_redshiftserverless_workgroup" "this" {
     parameter_value = "false"
   }
 
+  # Materialized on live workgroups by AWS with an empty value and sticky: the API
+  # rejects both removal ("You didn't specify any changes") and non-"true" values,
+  # so it must be declared exactly as observed or every plan shows a phantom update.
+  config_parameter {
+    parameter_key   = "enable_large_strings_opt_in"
+    parameter_value = ""
+  }
+
   config_parameter {
     parameter_key   = "enable_user_activity_logging"
     parameter_value = "true"
