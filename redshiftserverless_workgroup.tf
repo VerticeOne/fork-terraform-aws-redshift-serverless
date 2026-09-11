@@ -10,6 +10,15 @@ resource "aws_redshiftserverless_workgroup" "this" {
   security_group_ids = [aws_security_group.this.id]
   subnet_ids         = local.subnet.ids
 
+  # config_parameter is ignored on updates: AWS materializes parameters on live
+  # workgroups that this provider version cannot declare (schema enum rejects
+  # e.g. enable_large_strings_opt_in) and the API cannot remove (merge
+  # semantics) — any undeclared parameter otherwise causes a permanently
+  # failing phantom update. Parameters above still apply at creation.
+  lifecycle {
+    ignore_changes = [config_parameter]
+  }
+
   config_parameter {
     parameter_key   = "auto_mv"
     parameter_value = "true"
@@ -23,14 +32,6 @@ resource "aws_redshiftserverless_workgroup" "this" {
   config_parameter {
     parameter_key   = "enable_case_sensitive_identifier"
     parameter_value = "false"
-  }
-
-  # Materialized on live workgroups by AWS with an empty value and sticky: the API
-  # rejects both removal ("You didn't specify any changes") and non-"true" values,
-  # so it must be declared exactly as observed or every plan shows a phantom update.
-  config_parameter {
-    parameter_key   = "enable_large_strings_opt_in"
-    parameter_value = ""
   }
 
   config_parameter {
