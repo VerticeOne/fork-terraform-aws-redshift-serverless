@@ -387,6 +387,8 @@ resource "aws_cloudwatch_metric_alarm" "compute_capacity_warning" {
 
   alarm_actions = local.alarm_actions
   ok_actions    = local.ok_actions
+
+  tags = local.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "compute_capacity_critical" {
@@ -407,6 +409,8 @@ resource "aws_cloudwatch_metric_alarm" "compute_capacity_critical" {
 
   alarm_actions = local.alarm_actions
   ok_actions    = local.ok_actions
+
+  tags = local.tags
 }
 
 ##-----------------------------------------------------------------------------
@@ -429,6 +433,8 @@ resource "aws_cloudwatch_metric_alarm" "compute_seconds_warning" {
 
   alarm_actions = local.alarm_actions
   ok_actions    = local.ok_actions
+
+  tags = local.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "compute_seconds_critical" {
@@ -473,6 +479,8 @@ resource "aws_cloudwatch_metric_alarm" "database_connections_warning" {
 
   alarm_actions = local.alarm_actions
   ok_actions    = local.ok_actions
+
+  tags = local.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "database_connections_critical" {
@@ -493,6 +501,8 @@ resource "aws_cloudwatch_metric_alarm" "database_connections_critical" {
 
   alarm_actions = local.alarm_actions
   ok_actions    = local.ok_actions
+
+  tags = local.tags
 }
 
 ##-----------------------------------------------------------------------------
@@ -515,6 +525,8 @@ resource "aws_cloudwatch_metric_alarm" "queries_failed" {
 
   alarm_actions = local.alarm_actions
   ok_actions    = local.ok_actions
+
+  tags = local.tags
 }
 
 ##-----------------------------------------------------------------------------
@@ -537,6 +549,8 @@ resource "aws_cloudwatch_metric_alarm" "data_storage_warning" {
 
   alarm_actions = local.alarm_actions
   ok_actions    = local.ok_actions
+
+  tags = local.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "data_storage_critical" {
@@ -557,6 +571,8 @@ resource "aws_cloudwatch_metric_alarm" "data_storage_critical" {
 
   alarm_actions = local.alarm_actions
   ok_actions    = local.ok_actions
+
+  tags = local.tags
 }
 
 ##-----------------------------------------------------------------------------
@@ -579,6 +595,8 @@ resource "aws_cloudwatch_metric_alarm" "queries_queued" {
 
   alarm_actions = local.alarm_actions
   ok_actions    = local.ok_actions
+
+  tags = local.tags
 }
 
 ##-----------------------------------------------------------------------------
